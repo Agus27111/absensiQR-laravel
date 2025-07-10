@@ -2,13 +2,17 @@
 
 namespace App\Http\Controllers;
 
+use App\Imports\MuridImport;
 use App\Models\Murid;
 use App\Models\Absensi;
 use App\Models\Kelas;
 use App\Models\Tahun;
 use App\Models\IsAdmin;
+use Maatwebsite\Excel\Facades\Excel;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
+
 
 class MuridController extends Controller
 {
@@ -159,4 +163,20 @@ class MuridController extends Controller
             
            
     }
+
+    public function import(Request $request)
+    {
+        $request->validate([
+            'file' => 'required|mimes:xlsx,xls'
+        ]);
+    
+        try {
+            Excel::import(new MuridImport, $request->file('file')); 
+            return back()->with('success', 'Data murid berhasil diimport!');
+        } catch (\Exception $e) {
+            Log::error('Error saat import: ' . $e->getMessage());
+            return back()->with('error', 'Terjadi kesalahan saat import: ' . $e->getMessage());
+        }
+    }
+    
 }

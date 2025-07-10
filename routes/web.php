@@ -53,6 +53,8 @@ Route::get('/auto-run', [AbsensiController::class, 'gantiHari']);
 // Menuju Halaman Input Murid
 Route::get('/input-murid', [MuridController::class, 'index_input'])->middleware('auth');
 
+Route::post('/murid/import', [MuridController::class, 'import'])->name('murid.import')->middleware('auth');
+
 // Menyimpan Data Input Murid
 Route::post('/input-murid-proses', [MuridController::class, 'store'])->middleware('auth');
 

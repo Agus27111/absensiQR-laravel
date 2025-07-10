@@ -5,7 +5,7 @@
             <img src="/img/logo-sekolah.png" class="img-circle elevation-2" alt="Logo Sekolah">
         </div>
         <div class="info">
-            <a href="#" class="d-block">SMAN 1 Ungaran</a>
+            <a href="#" class="d-block"> SKLS Lahiza Sunnah</a>
         </div>
     </div>
 

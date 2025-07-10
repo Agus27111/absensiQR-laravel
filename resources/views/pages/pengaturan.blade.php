@@ -46,7 +46,7 @@
                                                     <div class="form-group">
                                                         <label for="namaSekolah">Nama Sekolah</label>
                                                         <input class="form-control" type="text" name="nama_sekolah"
-                                                            placeholder="Mis. SMAN 1 Ungaran"
+                                                            placeholder="Mis. SKLS Lahiza Sunnah"
                                                             value="@if ($data != '0') {{ $data->nama_sekolah }} @endif">
                                                     </div>
                                                 </div>
