@@ -29,7 +29,7 @@
                                                 <video id="previewKamera"
                                                     style="max-width: 800px;max-height: 300px;float:center;"></video>
                                                 <br>
-                                                <select id="pilihKamera" style="max-width:400px">
+                                                <select id="pilihKamera" style="width: 100%; max-width: 400px; padding: 0.5rem; border-radius: 4px;">
                                                 </select>
 
                                                 <script type="text/javascript" src="https://unpkg.com/@zxing/library@latest"></script>
@@ -59,13 +59,8 @@
 
                                                                 if (videoInputDevices.length > 0) {
 
-                                                                    if (selectedDeviceId == null) {
-                                                                        if (videoInputDevices.length > 1) {
-                                                                            selectedDeviceId = videoInputDevices[0].deviceId
-                                                                        } else {
-                                                                            selectedDeviceId = videoInputDevices[1].deviceId
-                                                                        }
-                                                                    }
+                                                                    selectedDeviceId = selectedDeviceId ?? videoInputDevices[0]?.deviceId;
+
 
 
                                                                     if (videoInputDevices.length >= 1) {
@@ -82,7 +77,16 @@
 
                                                                     }
 
-                                                                    function decodeQRCode() {
+                                                                    decodeQRCode(); // Memulai pemindaian QR kode
+
+                                                                } else {
+                                                                    alert("Camera not found!")
+                                                                }
+                                                            })
+                                                            .catch(err => console.error(err));
+                                                    }
+
+                                                    function decodeQRCode() {
                                                                         codeReader
                                                                             .decodeOnceFromVideoDevice(selectedDeviceId, 'previewKamera')
                                                                             .then(result => {
@@ -125,15 +129,6 @@
                                                                                 setTimeout(decodeQRCode, 50); // Melanjutkan pemindaian setelah 1 detik
                                                                             });
                                                                     }
-
-                                                                    decodeQRCode(); // Memulai pemindaian QR kode
-
-                                                                } else {
-                                                                    alert("Camera not found!")
-                                                                }
-                                                            })
-                                                            .catch(err => console.error(err));
-                                                    }
 
 
                                                     if (navigator.mediaDevices) {

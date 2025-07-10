@@ -25,7 +25,7 @@
                     <img src="/img/logo-sekolah.png" style="max-width:10%">
                 </div>
                 <div class="col-md-12 bg-white my-3 border">
-                    <marquee>Selamat datang di SMAN 1 Ungaran. Ini adalah aplikasi untuk Absensi para siswa.</marquee>
+                    <marquee>Selamat datang di SKLS Lahiza Sunnah. Ini adalah aplikasi untuk Absensi para siswa.</marquee>
                 </div>
             </div>
             <div id="messageContainer"></div>
@@ -113,7 +113,105 @@
     <script src="https://code.jquery.com/jquery-3.5.1.min.js"
         integrity="sha256-9/aliU8dGd2tb6OSsuzixeV4y/faTqgFtohetphbbj0=" crossorigin="anonymous"></script>
     <!-- Buka Kamera untuk Scan QR -->
-    <script type="text/javascript" src="/js/qrcamera.js"></script>
+    <script>
+      document.addEventListener('DOMContentLoaded', () => {
+        const codeReader = new ZXing.BrowserMultiFormatReader();
+        const videoElement = document.getElementById('previewKamera');
+        const selectElement = document.getElementById('pilihKamera');
+        const messageContainer = document.getElementById('messageContainer'); // container pesan notifikasi
+        let selectedDeviceId = null;
+    
+        // Fungsi tampilkan pesan alert (Bootstrap)
+        function showMessage(text, type = 'success') {
+          const div = document.createElement('div');
+          div.className = `alert alert-${type} mt-2`;
+          div.textContent = text;
+          messageContainer.appendChild(div);
+          setTimeout(() => div.remove(), 5000);
+        }
+    
+        // Fungsi load daftar kamera
+        function loadCameras() {
+          codeReader.listVideoInputDevices()
+            .then((videoInputDevices) => {
+              if (videoInputDevices.length === 0) {
+                alert("Tidak ada kamera yang terdeteksi.");
+                return;
+              }
+    
+              // Isi pilihan kamera
+              selectElement.innerHTML = '';
+              videoInputDevices.forEach((device, index) => {
+                const option = document.createElement('option');
+                option.value = device.deviceId;
+                option.text = device.label || `Kamera ${index + 1}`;
+                selectElement.appendChild(option);
+              });
+    
+              // Set kamera default
+              selectedDeviceId = videoInputDevices[0].deviceId;
+              selectElement.value = selectedDeviceId;
+    
+              startScan(selectedDeviceId);
+            })
+            .catch((err) => {
+              console.error(err);
+              alert('Gagal memuat kamera: ' + err);
+            });
+        }
+    
+        // Fungsi scan sekali dan kirim hasil, lalu ulangi scanning (loop manual)
+        function startScan(deviceId) {
+          codeReader.reset();
+    
+          function decodeLoop() {
+            codeReader.decodeOnceFromVideoDevice(deviceId, videoElement)
+              .then(result => {
+                console.log('QR Code:', result.text);
+    
+                // Play beep sound
+                const snd = new Audio("data:audio/mpeg;base64,//uwYAAP8AAAaQAAAAgAAA0gAAABAAABpBQAACAAADSCgAAETEFNRTMuOTguMgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==");
+                snd.play();
+    
+                // Kirim hasil scan ke backend via fetch (ubah URL sesuai kebutuhan)
+                fetch('/scan-qr/' + encodeURIComponent(result.text))
+                  .then(response => {
+                    if (!response.ok) throw new Error('Gagal mengirim data');
+                    return response.json();
+                  })
+                  .then(data => {
+                    showMessage('Absensi berhasil.', 'success');
+                  })
+                  .catch(err => {
+                    showMessage('Absensi gagal: ' + err.message, 'danger');
+                  });
+    
+                // Scan lagi setelah 1 detik
+                setTimeout(decodeLoop, 1000);
+              })
+              .catch(err => {
+                // Jika error biasanya NotFoundException, lanjutkan scan ulang
+                setTimeout(decodeLoop, 500);
+              });
+          }
+    
+          decodeLoop();
+        }
+    
+        // Event ganti kamera
+        selectElement.addEventListener('change', (e) => {
+          selectedDeviceId = e.target.value;
+          startScan(selectedDeviceId);
+        });
+    
+        if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+          loadCameras();
+        } else {
+          alert('Browser tidak mendukung akses kamera.');
+        }
+      });
+    </script>
+    
     <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
     <script src="/js/clock.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.7/dist/umd/popper.min.js"
