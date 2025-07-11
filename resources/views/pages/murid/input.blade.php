@@ -107,6 +107,11 @@
                             </div>
                         </form>
 
+                        <!-- Tombol Download Template Import Murid -->
+<a href="/download-template-murid" class="btn btn-info mb-2" target="_blank">
+    <i class="fas fa-download"></i> Download Template Import Murid
+</a>
+
                         <!-- Form Import Excel -->
                         <div class="card card-info mt-4">
                             <div class="card-header">

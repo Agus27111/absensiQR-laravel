@@ -34,6 +34,8 @@ Route::post('/keluar', [LoginController::class, 'logout']);
 
 // Menuju Halaman Beranda
 Route::get('/beranda', [DashboardController::class, 'index'])->middleware('auth');
+// Input izin siswa manual
+Route::post('/izin-siswa', [App\Http\Controllers\AbsensiController::class, 'izinManual'])->middleware('auth');
 
 // Menuju Halaman Scan QR
 Route::get('/scan-qr', [AbsensiController::class, 'index'])->middleware('auth');
@@ -52,6 +54,11 @@ Route::get('/auto-run', [AbsensiController::class, 'gantiHari']);
 
 // Menuju Halaman Input Murid
 Route::get('/input-murid', [MuridController::class, 'index_input'])->middleware('auth');
+
+// Download template import murid
+Route::get('/download-template-murid', function() {
+    return response()->download(public_path('template_import_murid.csv'));
+})->middleware('auth');
 
 Route::post('/murid/import', [MuridController::class, 'import'])->name('murid.import')->middleware('auth');
 
@@ -78,6 +85,8 @@ Route::get('/kelas/daftar', [KelasController::class, 'index'])->middleware('auth
 
 // Menuju Halaman Detail Kelas
 Route::get('/kelas/daftar/{id}', [KelasController::class, 'index_detail'])->middleware('auth');
+// Download Rekap Absensi Kelas
+Route::get('/kelas/daftar/{id}/rekap-absensi', [App\Http\Controllers\AbsensiController::class, 'rekapKelas'])->middleware('auth');
 
 // Menuju Halaman Data Master Kelas
 Route::get('/kelas', [KelasController::class, 'index_master'])->middleware('auth');

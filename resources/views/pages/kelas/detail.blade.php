@@ -45,6 +45,10 @@
                         </div>
                         <!-- /.card-header -->
                         <div class="card-body table-responsive p-0">
+                            <!-- Tombol Download Rekap Absensi Kelas -->
+                            <a href="/kelas/daftar/{{ $kelas->id }}/rekap-absensi" class="btn btn-success mb-2" target="_blank">
+                                <i class="fas fa-file-csv"></i> Download Rekap Absensi Kelas
+                            </a>
                             <table id="example2" class="table table-hover text-nowrap">
                                 <thead>
                                     <tr>

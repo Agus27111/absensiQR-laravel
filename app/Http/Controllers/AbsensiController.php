@@ -165,4 +165,90 @@ class AbsensiController extends Controller
     {
         //
     }
+
+    /**
+     * Export rekap absensi kelas ke CSV
+     */
+    public function rekapKelas($id)
+    {
+        $absensi = \App\Models\Absensi::with(['murid', 'murid.kelas'])
+            ->where('kelas_id', $id)
+            ->orderBy('murid_id')
+            ->orderBy('created_at')
+            ->get();
+
+        $headers = [
+            'Content-Type' => 'text/csv',
+            'Content-Disposition' => 'attachment; filename="rekap_absensi_kelas_'.$id.'.csv"',
+        ];
+
+        $callback = function() use ($absensi) {
+            $handle = fopen('php://output', 'w');
+            // Header kolom
+            fputcsv($handle, ['NIS', 'Nama', 'Kelas', 'Tanggal', 'Hari', 'Jam Absen', 'Status']);
+            foreach ($absensi as $a) {
+                $status = match($a->status) {
+                    0 => 'Tidak Hadir',
+                    1 => 'Masuk',
+                    2 => 'Terlambat',
+                    3 => 'Ijin',
+                    4 => 'Hari Libur',
+                    default => 'Lainnya'
+                };
+                fputcsv($handle, [
+                    $a->murid->nis ?? '',
+                    $a->murid->nama ?? '',
+                    $a->murid->kelas->kelas ?? '',
+                    $a->created_at->format('Y-m-d'),
+                    $a->hari,
+                    $a->jam_absen,
+                    $status
+                ]);
+            }
+            fclose($handle);
+        };
+        return response()->stream($callback, 200, $headers);
+    }
+    /**
+     * Input izin siswa manual dari dashboard
+     */
+    public function izinManual(Request $request)
+    {
+        $request->validate([
+            'murid_id' => 'required|exists:murids,id',
+            'tanggal' => 'required|date',
+            'alasan' => 'nullable|string',
+        ]);
+
+        $murid = \App\Models\Murid::with('kelas')->find($request->murid_id);
+        if (!$murid) {
+            return back()->with('fail', 'Murid tidak ditemukan.');
+        }
+
+        $tanggal = \Carbon\Carbon::parse($request->tanggal);
+        $hari = $tanggal->locale('id')->translatedFormat('l');
+        $bulan = $tanggal->locale('id')->translatedFormat('F');
+
+        // Cek jika sudah ada absensi pada tanggal tsb
+        $sudahAda = \App\Models\Absensi::where('murid_id', $murid->id)
+            ->whereDate('created_at', $tanggal->format('Y-m-d'))
+            ->exists();
+        if ($sudahAda) {
+            return back()->with('fail', 'Absensi untuk murid ini pada tanggal tersebut sudah ada.');
+        }
+
+        \App\Models\Absensi::create([
+            'murid_id' => $murid->id,
+            'kelas_id' => $murid->kelas_id,
+            'hari' => $hari,
+            'tanggal' => $tanggal->translatedFormat('d'),
+            'bulan' => $bulan,
+            'jam_absen' => $tanggal->translatedFormat('H:i:s'),
+            'status' => 3, // Izin
+            'created_at' => $tanggal,
+            'updated_at' => now(),
+        ]);
+        return back()->with('success', 'Izin berhasil dicatat.');
+    }
 }
+

@@ -29,6 +29,7 @@ class DashboardController extends Controller
         $absenTerlambat = count($dataAbsenTerlambat);        
         
 
+        $muridAll = Murid::with('kelas')->orderBy('nama')->get();
         return view('pages/beranda', [
             "title" => "Beranda",
             "titlepage" => "Beranda",
@@ -42,7 +43,8 @@ class DashboardController extends Controller
             "hari" => $hariIni,
             "tanggal" => $tanggalHariIni,
             "bulan" => $bulanHariIni,
-            "tahun" => $tahunHariIni
+            "tahun" => $tahunHariIni,
+            "muridAll" => $muridAll
         ]);
     }
 }

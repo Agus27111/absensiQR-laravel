@@ -17,6 +17,43 @@
 @endsection
 
 @section('content')
+    <!-- Form Input Izin Siswa -->
+    <div class="card mb-4">
+        <div class="card-header bg-warning">Input Izin Siswa</div>
+        <div class="card-body">
+            @if(session('success'))
+                <div class="alert alert-success">{{ session('success') }}</div>
+            @endif
+            @if(session('fail'))
+                <div class="alert alert-danger">{{ session('fail') }}</div>
+            @endif
+            <form action="/izin-siswa" method="POST">
+                @csrf
+                <div class="form-row align-items-end">
+                    <div class="form-group col-md-4">
+                        <label for="murid_id">Pilih Siswa</label>
+                        <select class="form-control" name="murid_id" id="murid_id" required>
+                            <option value="">-- Pilih Siswa --</option>
+                            @foreach($muridAll as $m)
+                                <option value="{{ $m->id }}">{{ $m->nis }} - {{ $m->nama }} ({{ $m->kelas->kelas ?? '-' }})</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="form-group col-md-3">
+                        <label for="tanggal">Tanggal Izin</label>
+                        <input type="date" class="form-control" name="tanggal" id="tanggal" required>
+                    </div>
+                    <div class="form-group col-md-3">
+                        <label for="alasan">Alasan (opsional)</label>
+                        <input type="text" class="form-control" name="alasan" id="alasan" placeholder="Alasan izin">
+                    </div>
+                    <div class="form-group col-md-2">
+                        <button type="submit" class="btn btn-warning">Input Izin</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
     <!-- Main content -->
     <section class="content">
         <div class="container-fluid">
