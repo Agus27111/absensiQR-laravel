@@ -18,6 +18,8 @@ class DatabaseSeeder extends Seeder
         //\App\Models\Absensi::factory(1000)->create();
         \App\Models\Kelas::factory(1)->create();
 
+        $this->call(DemoAndSuperAdminSeeder::class);
+
         // \App\Models\User::factory()->create([
         //     'name' => 'Test User',
         //     'email' => 'test@example.com',
