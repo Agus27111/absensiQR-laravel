@@ -13,12 +13,25 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
+        // Create parent data first for default seeding
+        $sekolah = \App\Models\Sekolah::factory()->create();
+
+        \App\Models\Murid::factory(50)->create([
+            'sekolah_id' => $sekolah->id
+        ]);
+        \App\Models\Tahun::factory(1)->create();
+        \App\Models\Jenjang::factory(1)->create();
+        \App\Models\Kelas::factory(1)->create();
+
+        // Then create related data
         \App\Models\User::factory(1)->create();
         \App\Models\Murid::factory(50)->create();
         //\App\Models\Absensi::factory(1000)->create();
-        \App\Models\Kelas::factory(1)->create();
 
-        $this->call(DemoAndSuperAdminSeeder::class);
+        $this->call([
+            DemoAndSuperAdminSeeder::class,
+            MultiTenantTestSeeder::class,
+        ]);
 
         // \App\Models\User::factory()->create([
         //     'name' => 'Test User',

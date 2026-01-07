@@ -20,6 +20,7 @@ class DemoAndSuperAdminSeeder extends Seeder
             [
                 'password' => Hash::make('superadmin123'),
                 'super_admin' => true,
+                'sekolah_id' => 1,
                 'remember_token' => Str::random(10),
             ]
         );
@@ -30,6 +31,7 @@ class DemoAndSuperAdminSeeder extends Seeder
             [
                 'password' => Hash::make('demo123'),
                 'super_admin' => false,
+                'sekolah_id' => 1,
                 'remember_token' => Str::random(10),
             ]
         );

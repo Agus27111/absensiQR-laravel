@@ -20,16 +20,16 @@ class MuridController extends Controller
      * Display a listing of the resource.
      */
     public function index_input()
-    {        
+    {
         // Verifikasi untuk User yang login apakah dia Admin
-            $verifikasiAdmin = new IsAdmin();
-            $verifikasiAdmin->isAdmin(); 
+        $verifikasiAdmin = new IsAdmin();
+        $verifikasiAdmin->isAdmin();
         // Jika status=1, maka akan lanjut kode di bawah
         // Jika status != 1, maka akan 403 Forbidden
 
         $kelas = Kelas::orderBy('kelas')->get();
         $tahun = Tahun::orderBy('tahun')->get();
-        return view('pages/murid/input', [            
+        return view('pages/murid/input', [
             "title" => "Input Murid",
             "titlepage" => "Input Murid",
             "kelas" => $kelas,
@@ -40,13 +40,19 @@ class MuridController extends Controller
     public function index_daftar()
     {
         // Verifikasi untuk User yang login apakah dia Admin
-            $verifikasiAdmin = new IsAdmin();
-            $verifikasiAdmin->isAdmin(); 
+        $verifikasiAdmin = new IsAdmin();
+        $verifikasiAdmin->isAdmin();
         // Jika status=1, maka akan lanjut kode di bawah
         // Jika status != 1, maka akan 403 Forbidden
 
-        $murid = Murid::with(['kelas','tahun'])->get();
-        return view('pages/murid/daftar', [            
+        $user = auth()->user();
+        // Filter murid berdasarkan sekolah - super admin bisa lihat semua, regular admin hanya sekolahnya
+        $murid = Murid::with(['kelas', 'tahun'])
+            ->when(!$user->super_admin, function ($query) use ($user) {
+                return $query->where('sekolah_id', $user->sekolah_id);
+            })
+            ->get();
+        return view('pages/murid/daftar', [
             "title" => "Daftar Murid",
             "titlepage" => "Daftar Murid",
             "murid" => $murid
@@ -67,8 +73,8 @@ class MuridController extends Controller
     public function store(Request $request)
     {
         // Verifikasi untuk User yang login apakah dia Admin
-            $verifikasiAdmin = new IsAdmin();
-            $verifikasiAdmin->isAdmin(); 
+        $verifikasiAdmin = new IsAdmin();
+        $verifikasiAdmin->isAdmin();
         // Jika status=1, maka akan lanjut kode di bawah
         // Jika status != 1, maka akan 403 Forbidden
 
@@ -78,30 +84,29 @@ class MuridController extends Controller
         $validasi = $request->validate([
             'nis' => 'required|integer|unique:murids',
             'nama' => 'required|min:3|max:255',
-            'kelas' => 'required'            
+            'kelas' => 'required'
         ]);
 
         $validasi['kelas_id'] = $kelas_id;
         $validasi['tahun_id'] = $tahun_id;
-        
+        $validasi['jenjang_id'] = 1; // Default, adjust based on your needs
+        $validasi['sekolah_id'] = auth()->user()->sekolah_id;
+
         Murid::create($validasi);
 
-        return redirect('/input-murid')->with('success','');
+        return redirect('/input-murid')->with('success', '');
     }
 
     /**
      * Display the specified resource.
      */
-    public function show(Murid $murid)
-    {
-        
-    }
+    public function show(Murid $murid) {}
 
     public function show_detail(Murid $murid)
     {
         // Verifikasi untuk User yang login apakah dia Admin
-            $verifikasiAdmin = new IsAdmin();
-            $verifikasiAdmin->isAdmin(); 
+        $verifikasiAdmin = new IsAdmin();
+        $verifikasiAdmin->isAdmin();
         // Jika status=1, maka akan lanjut kode di bawah
         // Jika status != 1, maka akan 403 Forbidden
 
@@ -141,27 +146,24 @@ class MuridController extends Controller
     public function destroy(Request $request)
     {
         // Verifikasi untuk User yang login apakah dia Admin
-            $verifikasiAdmin = new IsAdmin();
-            $verifikasiAdmin->isAdmin(); 
+        $verifikasiAdmin = new IsAdmin();
+        $verifikasiAdmin->isAdmin();
         // Jika status=1, maka akan lanjut kode di bawah
         // Jika status != 1, maka akan 403 Forbidden
-        
+
         $getId = $request->murid;
 
         // Hapus data Murid sesuai dengan id-nya
         $validasi = $request->validate([
             'captcha' => 'required|captcha'
         ]);
-        
-            if ($validasi) {  
-                Murid::where('id', $getId)->delete();         
-                return redirect('/daftar-murid')->with('deleted', 'Data Murid berhasil di hapus!.');              
-            } 
-            
-            return redirect('/detail-murid/'.$getId)->with('fail', '');
 
-            
-           
+        if ($validasi) {
+            Murid::where('id', $getId)->delete();
+            return redirect('/daftar-murid')->with('deleted', 'Data Murid berhasil di hapus!.');
+        }
+
+        return redirect('/detail-murid/' . $getId)->with('fail', '');
     }
 
     public function import(Request $request)
@@ -169,14 +171,16 @@ class MuridController extends Controller
         $request->validate([
             'file' => 'required|mimes:xlsx,xls'
         ]);
-    
+
         try {
-            Excel::import(new MuridImport, $request->file('file')); 
+            // Store sekolah_id di session temporarily
+            session(['import_sekolah_id' => auth()->user()->sekolah_id]);
+            Excel::import(new MuridImport, $request->file('file'));
+            session()->forget('import_sekolah_id');
             return back()->with('success', 'Data murid berhasil diimport!');
         } catch (\Exception $e) {
             Log::error('Error saat import: ' . $e->getMessage());
             return back()->with('error', 'Terjadi kesalahan saat import: ' . $e->getMessage());
         }
     }
-    
 }

@@ -32,7 +32,7 @@
                                     <p>Ubah pengaturan untuk aplikasi ini sesuai dengan kebutuhan sekolah anda.</p>
                                     <hr>
                                     <div class="container">
-                                        <form method="post">
+                                        <form method="post" enctype="multipart/form-data">
                                             @csrf
                                             <div class="row">
                                                 <div class="col-md-12 pb-4">
@@ -71,8 +71,14 @@
                                                 </div> --}}
                                                 <div class="col-md-6">
                                                     <div class="form-group">
-                                                        <label for="namaSekolah">Logo</label>
-                                                        <input class="form-control" type="text" name="logo">
+                                                        <label for="logo">Logo Sekolah</label>
+                                                        <input class="form-control" type="file" name="logo"
+                                                            accept="image/*">
+                                                        @if ($data != '0' && $data->logo)
+                                                            <small class="text-muted">Logo saat ini:</small><br>
+                                                            <img src="{{ asset('storage/' . $data->logo) }}" alt="Logo"
+                                                                width="80" class="mt-2">
+                                                        @endif
                                                     </div>
                                                 </div>
                                             </div>

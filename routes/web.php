@@ -10,6 +10,7 @@ use App\Http\Controllers\TahunController;
 use App\Http\Controllers\AbsensiController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\PengaturanController;
+use App\Http\Controllers\BillingController;
 
 
 /*
@@ -24,13 +25,13 @@ use App\Http\Controllers\PengaturanController;
 */
 
 // Menuju Halaman Login
-Route::get('/', [LoginController::class, 'index'])->name('login');  
+Route::get('/', [LoginController::class, 'index'])->name('login');
 
 // Proses Login
-Route::post('/', [LoginController::class, 'authenticate']); 
+Route::post('/', [LoginController::class, 'authenticate']);
 
 // Proses Logout
-Route::post('/keluar', [LoginController::class, 'logout']); 
+Route::post('/keluar', [LoginController::class, 'logout']);
 
 // Menuju Halaman Beranda
 Route::get('/beranda', [DashboardController::class, 'index'])->middleware('auth');
@@ -44,8 +45,8 @@ Route::get('/scan-qr', [AbsensiController::class, 'index'])->middleware('auth');
 Route::get('/scan-qr/{absensi}', [AbsensiController::class, 'store']);
 
 // Halaman Standalone-Scan
-Route::get('/scan-qr-standalone', function() {
-    
+Route::get('/scan-qr-standalone', function () {
+
     return view('/pages/scan-standalone');
 });
 
@@ -56,7 +57,7 @@ Route::get('/auto-run', [AbsensiController::class, 'gantiHari']);
 Route::get('/input-murid', [MuridController::class, 'index_input'])->middleware('auth');
 
 // Download template import murid
-Route::get('/download-template-murid', function() {
+Route::get('/download-template-murid', function () {
     return response()->download(public_path('template_import_murid.csv'));
 })->middleware('auth');
 
@@ -70,7 +71,7 @@ Route::get('/daftar-murid', [MuridController::class, 'index_daftar'])->middlewar
 
 // Menuju Halaman Daftar Murid
 Route::get('/daftar-murid/json', [MuridController::class, 'data'])->middleware('auth');
-      
+
 // Fungsi Hapus Murid
 Route::post('/detail-murid/hapus/{murid}', [MuridController::class, 'destroy']);
 
@@ -90,7 +91,7 @@ Route::get('/kelas/daftar/{id}/rekap-absensi', [App\Http\Controllers\AbsensiCont
 
 // Menuju Halaman Data Master Kelas
 Route::get('/kelas', [KelasController::class, 'index_master'])->middleware('auth');
-    
+
 // Menyimpan Data Master Kelas
 Route::post('/kelas-proses', [KelasController::class, 'store']);
 
@@ -98,7 +99,7 @@ Route::post('/kelas-proses', [KelasController::class, 'store']);
 Route::post('/kelas/hapus/{id}', [KelasController::class, 'destroy']);
 
 // Menuju Halaman Data Master Tahun
-Route::get('/tahun', [TahunController::class, 'index'])->middleware('auth');  
+Route::get('/tahun', [TahunController::class, 'index'])->middleware('auth');
 
 // Menyimpan Data Master Tahun
 Route::post('/tahun-proses', [TahunController::class, 'store']);
@@ -118,4 +119,9 @@ Route::post('/pengaturan', [PengaturanController::class, 'update'])->middleware(
 // Halaman GPS
 Route::get('/gps', [GpsController::class, 'index'])->middleware('auth');
 
-
+// Billing Routes
+Route::middleware('auth')->group(function () {
+    Route::get('/billing', [BillingController::class, 'index'])->name('billing.index');
+    Route::get('/billing/packages', [BillingController::class, 'packages'])->name('billing.packages');
+    Route::post('/billing/process', [BillingController::class, 'processPayment'])->name('billing.process');
+});

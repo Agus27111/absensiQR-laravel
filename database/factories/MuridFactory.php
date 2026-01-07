@@ -18,10 +18,12 @@ class MuridFactory extends Factory
     public function definition(): array
     {
         return [
-            'nis' => $this->faker->unique()->numberBetween(11020201993,11020211993),
-            'nama' => $this->faker->name(),            
+            'nis' => $this->faker->unique()->numberBetween(11020201993, 11020211993),
+            'nama' => $this->faker->name(),
+            'jenjang_id' => 1,
             'kelas_id' => 1,
-            'tahun_id' => 1,            
+            'tahun_id' => 1,
+            'sekolah_id' => 1,
             'created_at' => now(),
             'updated_at' => now()
         ];

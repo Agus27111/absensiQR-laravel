@@ -1,9 +1,10 @@
 <?php
 
 namespace App\Http\Controllers;
+
 use App\Models\IsAdmin;
 use App\Models\Pengaturan;
-
+use App\Models\Sekolah;
 use Illuminate\Http\Request;
 
 class PengaturanController extends Controller
@@ -30,12 +31,12 @@ class PengaturanController extends Controller
     public function show()
     {
         // Verifikasi untuk User yang login apakah dia Admin
-            $verifikasiAdmin = new IsAdmin();
-            $verifikasiAdmin->isAdmin(); 
+        $verifikasiAdmin = new IsAdmin();
+        $verifikasiAdmin->isAdmin();
         // Jika status=1, maka akan lanjut kode di bawah
         // Jika status != 1, maka akan 403 Forbidden
-        
-        $data = Pengaturan::get()->first() ?? "0";
+
+        $data = auth()->user()->sekolah ?? abort(404, 'Data sekolah tidak ditemukan');
 
         return view('/pages/pengaturan', [
             "title" => "Pengaturan",
@@ -60,12 +61,30 @@ class PengaturanController extends Controller
         $validasi = $request->validate([
             'nama_sekolah' => 'required',
             'jam_masuk' => 'required',
-            'logo' => 'required'
+            'logo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048'
         ]);
 
-        Pengaturan::create($validasi);
+        // Ambil sekolah milik user yang sedang login
+        $sekolah = auth()->user()->sekolah;
 
-        return redirect('/pengaturan')->with('success');
+        if (!$sekolah) {
+            return back()->with('error', 'Sekolah tidak terdeteksi.');
+        }
+
+        if ($request->hasFile('logo')) {
+            // Hapus logo lama
+            if ($sekolah->logo && \Illuminate\Support\Facades\Storage::exists('public/' . $sekolah->logo)) {
+                \Illuminate\Support\Facades\Storage::delete('public/' . $sekolah->logo);
+            }
+
+            // Simpan ke folder public/logos
+            $logoPath = $request->file('logo')->store('logos', 'public');
+            $validasi['logo'] = $logoPath;
+        }
+
+        $sekolah->update($validasi);
+
+        return redirect('/pengaturan')->with('success', 'Pengaturan berhasil disimpan');
     }
 
     /**

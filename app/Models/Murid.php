@@ -12,7 +12,7 @@ class Murid extends Model
     // Ini untuk mengijinkan Laravel mengisi tabel database dengan nama berikut
     // jika menggunakan tinker
     protected $guarded = ['id'];
-    
+
     public function kelas()
     {
         return $this->belongsTo(Kelas::class);
@@ -22,6 +22,9 @@ class Murid extends Model
     {
         return $this->belongsTo(Tahun::class);
     }
-    
-}
 
+    public function jenjang()
+    {
+        return $this->belongsTo(Jenjang::class);
+    }
+}
