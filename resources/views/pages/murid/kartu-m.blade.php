@@ -1,103 +1,99 @@
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <style>
     @page {
-        margin: 1cm;
+        margin: 0.5cm;
+        size: A4 portrait;
     }
 
     body {
         margin: 0;
+        padding: 0;
         font-family: 'Helvetica', 'Arial', sans-serif;
         background-color: #ffffff;
     }
 
-    /* Wrapper untuk kartu agar bisa berjejer */
+    .grid-container {
+        width: 100%;
+    }
+
+    /* Ukuran Standar ID Card (ISO 7810 ID-1) adalah 8.56cm x 5.4cm */
+    /* Kita gunakan 5.5cm x 8.5cm untuk mode Portrait */
     .card-wrapper {
         display: inline-block;
-        margin: 10px;
-        /* Jarak antar kartu */
+        width: 5.5cm;
+        height: 8.5cm;
+        margin: 0.15cm;
         vertical-align: top;
+        page-break-inside: avoid;
     }
 
     .card-container {
-        width: 250px;
-        /* Ukuran diperkecil sedikit agar muat berjejer di A4 */
-        height: 420px;
+        width: 100%;
+        height: 100%;
         position: relative;
         overflow: hidden;
-        border: 1px solid #ddd;
-        background: white;
+        border: 0.5pt solid #111a36;
+        background-color: white;
     }
 
-    /* Sidebar Gelap */
+    /* Sidebar Biru Gelap Vertikal */
     .sidebar {
         position: absolute;
         left: 0;
         top: 0;
         bottom: 0;
-        width: 45px;
+        width: 0.8cm;
         background-color: #111a36;
-        color: #ffb800;
-        text-align: center;
     }
 
     .sidebar-text {
         position: absolute;
-        width: 400px;
-        height: 60px;
-        left: -170px;
-        /* Geser ke kiri untuk menyeimbangkan rotasi */
-        bottom: 180px;
-
-        /* Rotasi standar DomPDF */
+        width: 7cm;
+        left: -3.1cm;
+        top: 3.5cm;
         transform: rotate(-90deg);
-
-        text-align: left;
+        text-align: center;
         color: #ffb800;
         font-weight: bold;
-        font-size: 18px;
+        font-size: 9pt;
         white-space: nowrap;
+        background-color: #111a36;
     }
 
     .sidebar-line {
         position: absolute;
-        left: 22px;
+        left: 0.4cm;
         top: 0;
-        bottom: 180px;
+        bottom: 0;
         width: 1.5px;
         background-color: #ffb800;
     }
 
     /* Konten Utama */
     .main-content {
-        margin-left: 45px;
-        padding: 15px;
+        margin-left: 0.8cm;
+        padding: 0.2cm;
     }
 
-    .header-logo table {
-        width: 100%;
-        border-collapse: collapse;
+    .header-logo {
+        margin-bottom: 0.3cm;
     }
 
     .school-name {
-        font-size: 11px;
+        font-size: 7.5pt;
         font-weight: bold;
         color: #111a36;
         line-height: 1.1;
     }
 
-    .school-loc {
-        font-size: 9px;
-        color: #333;
-    }
-
     .photo-profile {
         text-align: center;
-        margin: 10px 0;
+        margin: 0.3cm 0;
     }
 
     .photo-profile img {
-        width: 80px;
-        height: 80px;
+        width: 2.2cm;
+        height: 2.2cm;
         border-radius: 50%;
         border: 2px solid #ffb800;
         object-fit: cover;
@@ -105,97 +101,108 @@
 
     .student-name {
         text-align: center;
-        font-size: 13px;
-        font-weight: bold;
+        font-size: 9pt;
+        font-weight: 900;
         color: #111a36;
-        margin: 5px 0;
-        height: 35px;
-        /* Menjaga tinggi agar tetap sejajar */
         text-transform: uppercase;
+        height: 0.8cm;
+        overflow: hidden;
     }
 
     .qr-box {
-        text-align: center;
-        margin: 10px auto;
-        padding: 5px;
-        border: 1.5px solid #ffb800;
-        width: 110px;
-        height: 110px;
+        width: 1.8cm;
+        height: 1.8cm;
+        margin: 0.2cm auto;
+        padding: 2px;
+        border: 1px solid #ddd;
     }
 
     .qr-box img {
         width: 100%;
+        height: 100%;
     }
 
     .info-section {
-        margin-top: 10px;
-        font-size: 11px;
+        margin-top: 0.2cm;
+        font-size: 7.5pt;
         color: #111a36;
     }
 
     .info-table td {
-        padding: 2px 0;
+        padding: 1px 0;
         font-weight: bold;
-    }
-
-    /* Supaya tidak terpotong di tengah kartu saat ganti halaman PDF */
-    .card-wrapper {
-        display: inline-block;
-        margin: 5px;
-        page-break-inside: avoid;
     }
 </style>
 
-@foreach ($data as $item)
-    <div class="card-wrapper">
-        <div class="card-container">
-            <div class="sidebar">
-                <div class="sidebar-line"></div>
-                <div class="sidebar-text">{{ $sekolah->nama_sekolah }}</div>
-            </div>
+<div class="grid-container">
+    @foreach ($data as $item)
+        @php
+            $pathLogo =
+                $sekolah && $sekolah->logo && file_exists(public_path('storage/' . $sekolah->logo))
+                    ? public_path('storage/' . $sekolah->logo)
+                    : public_path('img/logo-sekolah.png');
+            $base64Logo =
+                'data:image/' .
+                pathinfo($pathLogo, PATHINFO_EXTENSION) .
+                ';base64,' .
+                base64_encode(file_get_contents($pathLogo));
 
-            <div class="main-content">
-                <div class="header-logo">
-                    <table>
-                        <tr>
-                            <td width="50">
-                                @if ($sekolah->logo)
-                                    <img src="{{ public_path('storage/' . $sekolah->logo) }}" width="45">
-                                @else
-                                    <img src="{{ public_path('img/logo-sekolah.png') }}" width="45">
-                                @endif
-                            </td>
-                        </tr>
-                    </table>
+            $pathPhoto =
+                $item['photo'] && file_exists(public_path('storage/' . $item['photo']))
+                    ? public_path('storage/' . $item['photo'])
+                    : public_path('img/user4-128x128.jpg');
+            $base64Photo =
+                'data:image/' .
+                pathinfo($pathPhoto, PATHINFO_EXTENSION) .
+                ';base64,' .
+                base64_encode(file_get_contents($pathPhoto));
+
+            $base64Qr = 'data:image/svg+xml;base64,' . base64_encode($item['qr']);
+        @endphp
+
+        <div class="card-wrapper">
+            <div class="card-container">
+                <div class="sidebar">
+                    <div class="sidebar-line"></div>
+                    <div class="sidebar-text">{{ $sekolah->nama_sekolah }}</div>
                 </div>
 
-                <div class="photo-profile">
-                    @if ($item['photo'])
-                        <img src="{{ public_path('storage/' . $item['photo']) }}">
-                    @else
-                        <img src="{{ public_path('/img/user4-128x128.jpg') }}">
-                    @endif
-                </div>
+                <div class="main-content">
+                    <div class="header-logo">
+                        <table width="100%">
+                            <tr>
+                                <td width="30"><img src="{{ $base64Logo }}" width="25"></td>
+                                <td class="school-name">{{ $sekolah->nama_sekolah }}</td>
+                            </tr>
+                        </table>
+                    </div>
 
-                <div class="student-name">{{ $item['nama'] }}</div>
+                    <div class="photo-profile">
+                        <img src="{{ $base64Photo }}">
+                    </div>
 
-                <div class="qr-box">
-                    <img src="data:image/png;base64, {{ base64_encode($item['qr']) }} ">
-                </div>
+                    <div class="student-name">{{ $item['nama'] }}</div>
 
-                <div class="info-section">
-                    <table class="info-table" width="100%">
-                        <tr>
-                            <td width="40">Kelas</td>
-                            <td>: {{ $item['kelas'] }}</td>
-                        </tr>
-                        <tr>
-                            <td>NIS</td>
-                            <td>: {{ $item['nis'] }}</td>
-                        </tr>
-                    </table>
+                    <div class="qr-box">
+                        <img src="{{ $base64Qr }}">
+                    </div>
+
+                    <div class="info-section">
+                        <table class="info-table" width="100%">
+                            <tr>
+                                <td width="35">Kelas</td>
+                                <td width="8">:</td>
+                                <td>{{ $item['kelas'] }}</td>
+                            </tr>
+                            <tr>
+                                <td>NIS</td>
+                                <td>:</td>
+                                <td>{{ $item['nis'] }}</td>
+                            </tr>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
-@endforeach
+    @endforeach
+</div>

@@ -20,11 +20,7 @@ class PdfController extends Controller
         // Jika status=1, maka akan lanjut kode di bawah
         // Jika status != 1, maka akan 403 Forbidden
 
-        $qr = base64_encode(
-            QrCode::format('png')
-                ->size(200)
-                ->generate($murid->nis)
-        );
+        $qr = QrCode::size(100)->generate($murid->nis);
 
         $pdf = PDF::loadView('pages.murid.kartu-s', [
             'data' => $murid,
@@ -33,6 +29,8 @@ class PdfController extends Controller
         ]);
         return $pdf->download('Kartu-Absen-' . $murid->nis . '.pdf');
     }
+
+
 
 
     public function downloadKartuMassal(Murid $murid, Kelas $kelas)
@@ -49,17 +47,11 @@ class PdfController extends Controller
             $data = [];
 
             foreach ($muridList as $m) {
-                $qr = base64_encode(
-                    QrCode::format('png')
-                        ->size(200)
-                        ->generate($m->nis)
-                );
-
                 $data[] = [
-                    'nama'  => $m->nama,
+                    'nama' => $m->nama,
                     'kelas' => $m->kelas->kelas,
-                    'nis'   => $m->nis,
-                    'qr'    => $qr,
+                    'nis' => $m->nis,
+                    'qr' => QrCode::size(100)->generate($m->nis),
                     'photo' => $m->photo
                 ];
             }

@@ -18,7 +18,6 @@
         border: 1px solid #eee;
     }
 
-    /* Sidebar Biru Gelap sesuai gambar */
     .sidebar {
         position: absolute;
         left: 0;
@@ -30,15 +29,11 @@
         text-align: center;
     }
 
-    /* Teks Vertikal di Sidebar */
-    /* Teks Vertikal di Sidebar */
     .sidebar-text {
         position: absolute;
         width: 400px;
         left: -170px;
-        /* Koordinat khusus DomPDF agar pas di tengah */
         top: 230px;
-        /* Pakai TOP lebih stabil daripada BOTTOM di PDF */
         transform: rotate(-90deg);
         text-align: center;
         color: #ffb800;
@@ -46,7 +41,6 @@
         font-size: 18px;
         white-space: nowrap;
         background-color: #111a36;
-        /* Nutupi garis kuning */
         padding: 5px 0;
     }
 
@@ -55,12 +49,10 @@
         left: 30px;
         top: 0;
         bottom: 0;
-        /* Full ke bawah */
         width: 2px;
         background-color: #ffb800;
     }
 
-    /* Konten Utama */
     .main-content {
         margin-left: 60px;
         padding: 20px;
@@ -88,7 +80,6 @@
         color: #333;
     }
 
-    /* Lingkaran Foto Murid */
     .photo-profile {
         text-align: center;
         margin: 10px 0;
@@ -112,22 +103,21 @@
         min-height: 40px;
     }
 
-    /* Kotak QR Code dengan Border Kuning */
     .qr-box {
-        text-align: center;
+        width: 100px;
+        height: 100px;
         margin: 10px auto;
-        padding: 8px;
-        border: 2px solid #ffb800;
-        width: 150px;
-        height: 150px;
+        background: white;
+        padding: 5px;
+        border: 1px solid #ddd;
     }
 
     .qr-box img {
         width: 100%;
         height: 100%;
+        display: block;
     }
 
-    /* Bagian Info Bawah */
     .info-section {
         margin-top: 15px;
         font-size: 13px;
@@ -140,18 +130,35 @@
         vertical-align: top;
     }
 </style>
+
 @php
-    // Logic Base64 untuk Logo (Paling aman untuk PDF)
-    $pathLogo = $sekolah->logo ? public_path('storage/' . $sekolah->logo) : public_path('img/logo-sekolah.png');
+    // 1. Logika Base64 untuk Logo Sekolah
+    // Cek apakah file ada di storage, jika tidak pakai gambar default di public/img
+    $pathLogo =
+        $sekolah && $sekolah->logo && file_exists(public_path('storage/' . $sekolah->logo))
+            ? public_path('storage/' . $sekolah->logo)
+            : public_path('img/logo-sekolah.png');
+
     $typeLogo = pathinfo($pathLogo, PATHINFO_EXTENSION);
     $dataLogo = file_get_contents($pathLogo);
     $base64Logo = 'data:image/' . $typeLogo . ';base64,' . base64_encode($dataLogo);
 
-    // Logic Base64 untuk Foto Murid
-    $pathPhoto = $data->photo ? public_path('storage/' . $data->photo) : public_path('img/user4-128x128.jpg');
+    // 2. Logika Base64 untuk Foto Murid
+    // Variabel foto murid di kartu satuan biasanya $data->photo, di massal juga $data['photo']
+    $fotoPath = is_array($data) ? $data['photo'] : $data->photo;
+
+    $pathPhoto =
+        $fotoPath && file_exists(public_path('storage/' . $fotoPath))
+            ? public_path('storage/' . $fotoPath)
+            : public_path('img/user4-128x128.jpg');
+
     $typePhoto = pathinfo($pathPhoto, PATHINFO_EXTENSION);
     $dataPhoto = file_get_contents($pathPhoto);
     $base64Photo = 'data:image/' . $typePhoto . ';base64,' . base64_encode($dataPhoto);
+
+    // 3. Logika Base64 untuk QR Code
+    // Karena tidak pakai imagick, format QR Code otomatis SVG (text-based), kita base64-kan
+    $base64Qr = 'data:image/svg+xml;base64,' . base64_encode($qr);
 @endphp
 
 <div class="card-container">
@@ -177,25 +184,29 @@
             <img src="{{ $base64Photo }}">
         </div>
 
-        <div class="student-name">{{ $data->nama }}</div>
-
-        <div class="qr-box">
-            <img src="data:image/png;base64,{{ $qr }}" width="80" alt="QR Code" />
+        <div class="student-name">
+            {{ is_array($data) ? $data['nama'] : $data->nama }}
         </div>
 
-
+        <div class="qr-box">
+            <img src="{{ $base64Qr }}">
+        </div>
 
         <div class="info-section">
             <table class="info-table" width="100%">
                 <tr>
                     <td width="50">Kelas</td>
                     <td width="10">:</td>
-                    <td>{{ $data->kelas->kelas }}</td>
+                    <td>
+                        {{ is_array($data) ? $data['kelas'] : $data->kelas->kelas }}
+                    </td>
                 </tr>
                 <tr>
                     <td>NIS</td>
                     <td>:</td>
-                    <td>{{ $data->nis }}</td>
+                    <td>
+                        {{ is_array($data) ? $data['nis'] : $data->nis }}
+                    </td>
                 </tr>
             </table>
         </div>
