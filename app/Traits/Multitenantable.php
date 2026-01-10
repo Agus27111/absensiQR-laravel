@@ -8,19 +8,19 @@ trait Multitenantable
 {
     protected static function bootMultitenantable()
     {
-        static::addGlobalScope('sekolah_id', function (Builder $builder) {
-            if (auth()->check() && !auth()->user()->super_admin) {
-                $builder->where('sekolah_id', auth()->user()->sekolah_id);
-            }
-        });
-
-        // Otomatis mengisi sekolah_id saat input data baru
-        static::creating(function ($model) {
-            if (auth()->check()) {
-                // Hanya isi otomatis jika user memiliki sekolah_id (bukan super admin global)
-                if (auth()->user()->sekolah_id) {
-                    $model->sekolah_id = auth()->user()->sekolah_id;
+        // Hanya jalankan scope jika sedang di Front-end (bukan saat login/console)
+        if (auth()->check()) {
+            static::addGlobalScope('sekolah_id', function (Builder $builder) {
+                // Jangan filter jika dia super_admin
+                if (!auth()->user()->super_admin) {
+                    $builder->where(static::query()->getModel()->getTable() . '.sekolah_id', auth()->user()->sekolah_id);
                 }
+            });
+        }
+
+        static::creating(function ($model) {
+            if (auth()->check() && !isset($model->sekolah_id)) {
+                $model->sekolah_id = auth()->user()->sekolah_id;
             }
         });
     }

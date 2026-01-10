@@ -78,6 +78,8 @@ Route::post('/detail-murid/hapus/{murid}', [MuridController::class, 'destroy']);
 // Menuju Halaman Detail Murid
 Route::get('/detail-murid/{murid}', [MuridController::class, 'show_detail']);
 
+Route::put('/detail-murid/update/{murid}', [MuridController::class, 'update']);
+
 // // Fungsi Menampilkan Absensi Dengan Range Tertentu
 // Route::post('/detail-murid/{id}', [AbsensiController::class, 'show_range'])->middleware('auth');
 
@@ -122,6 +124,7 @@ Route::get('/gps', [GpsController::class, 'index'])->middleware('auth');
 // Billing Routes
 Route::middleware('auth')->group(function () {
     Route::get('/billing', [BillingController::class, 'index'])->name('billing.index');
-    Route::get('/billing/packages', [BillingController::class, 'packages'])->name('billing.packages');
-    Route::post('/billing/process', [BillingController::class, 'processPayment'])->name('billing.process');
+    Route::get('/billing/checkout', [BillingController::class, 'checkout'])->name('billing.checkout');
 });
+// Webhook Midtrans
+Route::post('/midtrans-callback', [BillingController::class, 'callback']);

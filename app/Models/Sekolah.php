@@ -45,4 +45,21 @@ class Sekolah extends Model
     {
         return $this->hasMany(Jenjang::class, 'sekolah_id');
     }
+
+    public function kelas()
+    {
+        return $this->hasMany(Kelas::class, 'sekolah_id');
+    }
+
+    //midtrans
+    public function getSisaHariAttribute()
+    {
+        if (!$this->subscription_until) return 0;
+        return now()->diffInDays($this->subscription_until, false);
+    }
+
+    public function getIsAktifAttribute()
+    {
+        return $this->subscription_until && now()->lt($this->subscription_until);
+    }
 }

@@ -1,104 +1,136 @@
 @extends('layouts/main')
 
-<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/timepicker/1.3.5/jquery.timepicker.min.css">
-
-@section('breadcrumb')
-    <li class="breadcrumb-item"><a href="/beranda">Beranda / Pengaturan</a></li>
-@endsection
-
 @section('content')
     <section class="content">
         <div class="container-fluid">
-            <div class="row">
-                <div class="col-md-6">
-                    <div class="card">
-                        <nav>
-                            <div class="nav nav-tabs" id="nav-tab" role="tablist">
-                                <button class="nav-link active" id="nav-home-tab" data-bs-toggle="tab"
-                                    data-bs-target="#nav-home" type="button" role="tab" aria-controls="nav-home"
-                                    aria-selected="true">Umum</button>
-                                <button class="nav-link" id="nav-profile-tab" data-bs-toggle="tab"
-                                    data-bs-target="#nav-profile" type="button" role="tab" aria-controls="nav-profile"
-                                    aria-selected="false">Kartu</button>
-                                <button class="nav-link" id="nav-profile-tab" data-bs-toggle="tab"
-                                    data-bs-target="#nav-contact" type="button" role="tab" aria-controls="nav-profile"
-                                    aria-selected="false">User</button>
-                            </div>
-                        </nav>
-                        <div class="tab-content" id="nav-tabContent">
-                            <div class="tab-pane fade show active" id="nav-home" role="tabpanel"
-                                aria-labelledby="nav-home-tab" tabindex="0">
-                                <div class="card-body">
-                                    <p>Ubah pengaturan untuk aplikasi ini sesuai dengan kebutuhan sekolah anda.</p>
-                                    <hr>
-                                    <div class="container">
-                                        <form method="post" enctype="multipart/form-data">
-                                            @csrf
-                                            <div class="row">
-                                                <div class="col-md-12 pb-4">
-                                                    <div class="form-group">
-                                                        <label for="namaSekolah">License Key</label>
-                                                        <input class="form-control" type="text" name="licenseKey"
-                                                            placeholder="Masukkan 20 Digit License Key Anda">
-                                                    </div>
-                                                </div>
-                                                <div class="col-md-6">
-                                                    <div class="form-group">
-                                                        <label for="namaSekolah">Nama Sekolah</label>
-                                                        <input class="form-control" type="text" name="nama_sekolah"
-                                                            placeholder="Mis. SKLS Lahiza Sunnah"
-                                                            value="@if ($data != '0') {{ $data->nama_sekolah }} @endif">
-                                                    </div>
-                                                </div>
-                                                <div class="col-md-6">
-                                                    <div class="form-group">
-                                                        <label for="namaSekolah">Jam Masuk</label>
-                                                        <input class="form-control" type="text" class="timepicker"
-                                                            name="jam_masuk"
-                                                            value="@if ($data != '0') {{ $data->jam_masuk }} @endif">
-                                                    </div>
-                                                </div>
-                                                {{-- <div class="col-md-6">
-                                                    <div class="input-group-prepend">
-                                                        <label>Logo Sekolah </label>
-                                                    </div>
-                                                    <div class="custom-file">
-                                                        <input type="file" class="custom-file-input"
-                                                            id="inputGroupFile01" value="logo" name="logo">
-                                                        <label class="custom-file-label" for="inputGroupFile01">Choose
-                                                            file</label>
-                                                    </div>
-                                                </div> --}}
-                                                <div class="col-md-6">
-                                                    <div class="form-group">
-                                                        <label for="logo">Logo Sekolah</label>
-                                                        <input class="form-control" type="file" name="logo"
-                                                            accept="image/*">
-                                                        @if ($data != '0' && $data->logo)
-                                                            <small class="text-muted">Logo saat ini:</small><br>
-                                                            <img src="{{ asset('storage/' . $data->logo) }}" alt="Logo"
-                                                                width="80" class="mt-2">
-                                                        @endif
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div class="pt-5">
-                                                <button class="btn btn-primary" type="submit">Simpan</button>
-                                            </div>
-                                        </form>
+            <div class="card">
+                <div class="card-header p-2">
+                    <ul class="nav nav-pills">
+                        <li class="nav-item"><a class="nav-link active" href="#umum" data-toggle="tab">Umum</a></li>
+                        <li class="nav-item"><a class="nav-link" href="#kartu" data-toggle="tab">Download Kartu</a></li>
+                        <li class="nav-item"><a class="nav-link text-primary" href="#billing" data-toggle="tab"><b>Billing &
+                                    Pembayaran</b></a></li>
+                    </ul>
+                </div>
+                <div class="card-body">
+                    <div class="tab-content">
+
+                        <div class="active tab-pane" id="umum">
+                            <form method="post" action="/pengaturan" enctype="multipart/form-data">
+                                @csrf
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label>Nama Sekolah</label>
+                                            <input type="text" name="nama_sekolah" class="form-control"
+                                                value="{{ $data->nama_sekolah }}">
+                                        </div>
+                                        <div class="form-group">
+                                            <label>Jam Masuk</label>
+                                            <input type="time" name="jam_masuk" class="form-control"
+                                                value="{{ $data->jam_masuk }}">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6 text-center">
+                                        <label>Logo Sekolah</label><br>
+                                        <img src="{{ asset('storage/' . $data->logo) }}" width="100"
+                                            class="img-thumbnail mb-2">
+                                        <input type="file" name="logo" class="form-control">
                                     </div>
                                 </div>
-                            </div>
-                            <div class="tab-pane fade" id="nav-profile" role="tabpanel" aria-labelledby="nav-profile-tab"
-                                tabindex="0">...</div>
-                            <div class="tab-pane fade" id="nav-contact" role="tabpanel" aria-labelledby="nav-contact-tab"
-                                tabindex="0">...</div>
-                            <div class="tab-pane fade" id="nav-disabled" role="tabpanel" aria-labelledby="nav-disabled-tab"
-                                tabindex="0">...</div>
+                                <button type="submit" class="btn btn-primary mt-3">Simpan Perubahan</button>
+                            </form>
                         </div>
+
+                        <div class="tab-pane" id="kartu">
+                            <h5>Download Kartu Siswa Per-Kelas</h5>
+                            <p class="text-muted">Pilih kelas untuk mendownload seluruh kartu QR siswa dalam format PDF.</p>
+                            <div class="list-group">
+                                @if ($sekolah && $sekolah->kelas->count() > 0)
+                                    @foreach ($sekolah->kelas as $k)
+                                        <a href="/download-kartu-massal/{{ $k->id }}"
+                                            class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                                            Kelas: {{ $k->kelas }}
+                                            <span class="badge badge-primary badge-pill"><i class="fas fa-download"></i>
+                                                PDF</span>
+                                        </a>
+                                    @endforeach
+                                @else
+                                    <div class="text-center py-3">
+                                        <p class="text-muted">Belum ada data kelas. Silakan tambah kelas terlebih dahulu.
+                                        </p>
+                                    </div>
+                                @endif
+                            </div>
+                        </div>
+
+                        <div class="tab-pane" id="billing">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <h5>Status Langganan</h5>
+                                    <div
+                                        class="alert @if ($sekolah->status_langganan == 'active') alert-success @else alert-danger @endif">
+                                        Status: <strong>{{ strtoupper($sekolah->status_langganan) }}</strong><br>
+                                        Berlaku hingga:
+                                        <strong>{{ $sekolah->subscription_until ? \Carbon\Carbon::parse($sekolah->subscription_until)->format('d M Y') : '-' }}</strong>
+                                    </div>
+                                    <button id="pay-button" class="btn btn-success btn-lg shadow">
+                                        <i class="fas fa-shopping-cart mr-2"></i> Perpanjang 30 Hari (Rp 100.000)
+                                    </button>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <h5>Riwayat Transaksi Terakhir</h5>
+                                    <table class="table table-sm">
+                                        <thead>
+                                            <tr>
+                                                <th>Order ID</th>
+                                                <th>Status</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach ($riwayat as $r)
+                                                <tr>
+                                                    <td>{{ $r->order_id }}</td>
+                                                    <td><span
+                                                            class="badge @if ($r->status == 'success') badge-success @else badge-warning @endif">{{ $r->status }}</span>
+                                                    </td>
+                                                </tr>
+                                            @endforeach
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+
                     </div>
                 </div>
             </div>
         </div>
     </section>
+
+    <script src="https://app.sandbox.midtrans.com/snap/snap.js" data-client-key="{{ env('MIDTRANS_CLIENT_KEY') }}"></script>
+    <script>
+        document.getElementById('pay-button').onclick = function() {
+            fetch('{{ route('billing.checkout') }}', {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.snap_token) {
+                        snap.pay(data.snap_token, {
+                            onSuccess: function(result) {
+                                window.location.reload();
+                            },
+                            onPending: function(result) {
+                                window.location.reload();
+                            }
+                        });
+                    }
+                });
+        };
+    </script>
 @endsection

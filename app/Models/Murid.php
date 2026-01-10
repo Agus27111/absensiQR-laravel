@@ -2,12 +2,13 @@
 
 namespace App\Models;
 
+use App\Traits\Multitenantable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Murid extends Model
 {
-    use HasFactory;
+    use HasFactory, Multitenantable;
 
     // Ini untuk mengijinkan Laravel mengisi tabel database dengan nama berikut
     // jika menggunakan tinker
@@ -26,5 +27,9 @@ class Murid extends Model
     public function jenjang()
     {
         return $this->belongsTo(Jenjang::class);
+    }
+    public function sekolah()
+    {
+        return $this->belongsTo(Sekolah::class);
     }
 }

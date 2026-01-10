@@ -8,55 +8,70 @@ use App\Models\Kelas;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
 use Barryvdh\DomPDF\Facade\Pdf;
 use App\Models\IsAdmin;
+
 class PdfController extends Controller
 {
 
     public function downloadKartuSatuan(Murid $murid)
-    {         
+    {
         // Verifikasi untuk User yang login apakah dia Admin
-            $verifikasiAdmin = new IsAdmin();
-            $verifikasiAdmin->isAdmin(); 
+        $verifikasiAdmin = new IsAdmin();
+        $verifikasiAdmin->isAdmin();
         // Jika status=1, maka akan lanjut kode di bawah
         // Jika status != 1, maka akan 403 Forbidden
 
-        $pdf = PDF::loadView('/pages/murid/kartu-s', [
+        $qr = base64_encode(
+            QrCode::format('png')
+                ->size(200)
+                ->generate($murid->nis)
+        );
+
+        $pdf = PDF::loadView('pages.murid.kartu-s', [
             'data' => $murid,
-            "qr" => QrCode::size(80)->generate($murid->nis)
+            'sekolah' => $murid->sekolah,
+            'qr' => $qr
         ]);
-        return $pdf->download('Kartu-Absen-'.$murid->nis.'.pdf');
+        return $pdf->download('Kartu-Absen-' . $murid->nis . '.pdf');
     }
 
-    
+
     public function downloadKartuMassal(Murid $murid, Kelas $kelas)
-    {        
-        // Verifikasi untuk User yang login apakah dia Admin
-            $verifikasiAdmin = new IsAdmin();
-            $verifikasiAdmin->isAdmin(); 
-        // Jika status=1, maka akan lanjut kode di bawah
-        // Jika status != 1, maka akan 403 Forbidden
+    {
+        $verifikasiAdmin = new IsAdmin();
+        $verifikasiAdmin->isAdmin();
 
-        $murid = Murid::where('kelas_id', $kelas->id)->get();        
+        $muridList = Murid::where('kelas_id', $kelas->id)->get();
 
-        if(count($murid) > 0) {
-            foreach($murid as $m) {
-                $qr = QrCode::size(80)->generate($m->nis);
+        if ($muridList->count() > 0) {
+            // Ambil data sekolah dari salah satu murid (misal murid pertama)
+            $sekolah = $muridList->first()->sekolah;
+
+            $data = [];
+
+            foreach ($muridList as $m) {
+                $qr = base64_encode(
+                    QrCode::format('png')
+                        ->size(200)
+                        ->generate($m->nis)
+                );
 
                 $data[] = [
-                    'nama' => $m->nama,
+                    'nama'  => $m->nama,
                     'kelas' => $m->kelas->kelas,
-                    'nis' => $m->nis,
-                    'qr' => $qr
+                    'nis'   => $m->nis,
+                    'qr'    => $qr,
+                    'photo' => $m->photo
                 ];
-            }         
+            }
+
             $pdf = PDF::loadView('/pages/murid/kartu-m', [
-                'data' => $data
+                'data' => $data,
+                'sekolah' => $sekolah // WAJIB DIKIRIM agar sidebar dan header tidak error
             ]);
-            return $pdf->download('Kartu-Absen-'.$kelas->kelas.'.pdf');
-            return view('/kelas');
+
+            return $pdf->download('Kartu-Absen-' . $kelas->kelas . '.pdf');
+        } else {
+            return redirect('/kelas/daftar')->with('fail_qr', '');
         }
-        else {
-            return redirect('/kelas/daftar')->with('fail_qr','');
-        }    
-    }    
-    
+    }
 }

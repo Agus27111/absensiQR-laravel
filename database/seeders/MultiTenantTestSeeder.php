@@ -19,7 +19,6 @@ class MultiTenantTestSeeder extends Seeder
     public function run(): void
     {
         // ==================== SEKOLAH 1: SMA NEGERI 1 ====================
-        // Get existing sekolah from factory or create new one
         $sekolah1 = Sekolah::firstWhere('npsn', '20212345');
         if (!$sekolah1) {
             $sekolah1 = Sekolah::create([
@@ -31,15 +30,16 @@ class MultiTenantTestSeeder extends Seeder
             ]);
         }
 
-        // Tahun Ajaran untuk Sekolah 1
-        $tahun1 = Tahun::firstWhere('tahun', '2025/2026');
+        // PERBAIKAN: Tambahkan sekolah_id
+        $tahun1 = Tahun::where('tahun', '2025/2026')->where('sekolah_id', $sekolah1->id)->first();
         if (!$tahun1) {
             $tahun1 = Tahun::create([
                 'tahun' => '2025/2026',
+                'sekolah_id' => $sekolah1->id,
             ]);
         }
 
-        // Jenjang untuk Sekolah 1
+        // PERBAIKAN: Pastikan kolom 'nama_jenjang' sesuai dengan migration kamu
         $jenjang1 = Jenjang::where('sekolah_id', $sekolah1->id)->first();
         if (!$jenjang1) {
             $jenjang1 = Jenjang::create([
@@ -48,11 +48,12 @@ class MultiTenantTestSeeder extends Seeder
             ]);
         }
 
-        // Kelas untuk Sekolah 1
-        $kelas1 = Kelas::firstWhere('kelas', 'X-IPA');
+        // PERBAIKAN: Tambahkan sekolah_id
+        $kelas1 = Kelas::where('kelas', 'X-IPA')->where('sekolah_id', $sekolah1->id)->first();
         if (!$kelas1) {
             $kelas1 = Kelas::create([
                 'kelas' => 'X-IPA',
+                'sekolah_id' => $sekolah1->id,
             ]);
         }
 
@@ -67,7 +68,7 @@ class MultiTenantTestSeeder extends Seeder
             ]);
         }
 
-        // Murid untuk Sekolah 1 (25 siswa) - hanya jika belum ada
+        // Murid untuk Sekolah 1
         $muridCount1 = Murid::where('sekolah_id', $sekolah1->id)->count();
         if ($muridCount1 == 0) {
             for ($i = 1; $i <= 25; $i++) {
@@ -91,20 +92,22 @@ class MultiTenantTestSeeder extends Seeder
             'subscription_until' => now()->addMonths(6),
         ]);
 
-        // Tahun Ajaran untuk Sekolah 2
+        // PERBAIKAN: Tambahkan sekolah_id
         $tahun2 = Tahun::create([
             'tahun' => '2024/2025',
+            'sekolah_id' => $sekolah2->id,
         ]);
 
-        // Jenjang untuk Sekolah 2
+        // PERBAIKAN: Pastikan kolom sesuai
         $jenjang2 = Jenjang::create([
             'name' => 'Sekolah Menengah Kejuruan',
             'sekolah_id' => $sekolah2->id,
         ]);
 
-        // Kelas untuk Sekolah 2
+        // PERBAIKAN: Tambahkan sekolah_id
         $kelas2 = Kelas::create([
             'kelas' => 'XI-RPL',
+            'sekolah_id' => $sekolah2->id,
         ]);
 
         // User untuk Sekolah 2
@@ -115,7 +118,7 @@ class MultiTenantTestSeeder extends Seeder
             'sekolah_id' => $sekolah2->id,
         ]);
 
-        // Murid untuk Sekolah 2 (30 siswa)
+        // Murid untuk Sekolah 2
         for ($i = 1; $i <= 30; $i++) {
             Murid::create([
                 'nis' => 12020202000 + $i,
@@ -127,18 +130,6 @@ class MultiTenantTestSeeder extends Seeder
             ]);
         }
 
-        // ==================== OUTPUT ====================
         $this->command->info('Multi-Tenant Test Data Created Successfully!');
-        $this->command->newLine();
-        $this->command->info('Sekolah 1: SMA Negeri 1');
-        $this->command->info('  - Username: admin_sma1');
-        $this->command->info('  - Password: admin123');
-        $this->command->info('  - Jumlah Siswa: 25');
-        $this->command->newLine();
-        $this->command->info('Sekolah 2: SMKN 2 Bandung');
-        $this->command->info('  - Username: admin_smkn2');
-        $this->command->info('  - Password: admin456');
-        $this->command->info('  - Jumlah Siswa: 30');
-        $this->command->newLine();
     }
 }

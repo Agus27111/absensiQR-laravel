@@ -6,11 +6,16 @@ use App\Traits\Multitenantable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Kelas extends Model
+class Transaksi extends Model
 {
     use HasFactory, Multitenantable;
 
-    protected $guarded = ['id'];
-   
-    
+    protected $fillable = [
+        'sekolah_id',
+        'order_id',
+        'status',
+        'gross_amount',
+        'snap_token',
+        'payment_type'
+    ];
 }

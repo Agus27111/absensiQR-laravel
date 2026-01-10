@@ -30,18 +30,25 @@ class PengaturanController extends Controller
      */
     public function show()
     {
-        // Verifikasi untuk User yang login apakah dia Admin
-        $verifikasiAdmin = new IsAdmin();
-        $verifikasiAdmin->isAdmin();
-        // Jika status=1, maka akan lanjut kode di bawah
-        // Jika status != 1, maka akan 403 Forbidden
+        $user = auth()->user();
 
-        $data = auth()->user()->sekolah ?? abort(404, 'Data sekolah tidak ditemukan');
+        // Pastikan sekolah diambil dengan relasi kelasnya (eager loading)
+        $sekolah = Sekolah::with('kelas')->find($user->sekolah_id);
 
-        return view('/pages/pengaturan', [
+        if (!$sekolah) {
+            return redirect()->back()->with('error', 'Data sekolah tidak ditemukan.');
+        }
+
+        $riwayat = \App\Models\Transaksi::where('sekolah_id', $sekolah->id)
+            ->orderBy('created_at', 'desc')
+            ->take(5)
+            ->get();
+
+        return view('pages.pengaturan', [
             "title" => "Pengaturan",
-            "titlepage" => "Pengaturan",
-            "data" => $data
+            "data" => $sekolah,     // Digunakan untuk tab Umum
+            "sekolah" => $sekolah,  // Digunakan untuk tab Kartu
+            "riwayat" => $riwayat   // Digunakan untuk tab Billing
         ]);
     }
 

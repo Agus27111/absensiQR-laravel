@@ -8,11 +8,13 @@ use App\Models\Absensi;
 use App\Models\Kelas;
 use App\Models\Tahun;
 use App\Models\IsAdmin;
+use App\Models\Sekolah;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Maatwebsite\Excel\Facades\Excel;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
-
+use Illuminate\Support\Facades\Storage;
 
 class MuridController extends Controller
 {
@@ -109,18 +111,21 @@ class MuridController extends Controller
         $verifikasiAdmin->isAdmin();
         // Jika status=1, maka akan lanjut kode di bawah
         // Jika status != 1, maka akan 403 Forbidden
+        $sekolah = Sekolah::find($murid->sekolah_id);
+
 
         $kelas = Kelas::get('kelas');
         $tahun = Tahun::get('tahun');
         return view('pages/murid/detail', [
             "title" => "Detail Murid",
             "titlepage" => "Detail Murid",
-            "kelas" => $kelas,
+            "kelas_all" => Kelas::all(),
             "murid" => $murid,
-            "tahun" => $tahun,
+            "data" => $murid,
+            "tahun" => Tahun::all(),
             "absensi" => Absensi::latest()->where('murid_id', $murid->id)->limit(30)->get(),
-            "qr" => QrCode::size(200)->generate($murid->nis)
-
+            "qr" => QrCode::size(100)->generate($murid->nis),
+            "sekolah" => $sekolah
         ]);
     }
 
@@ -135,9 +140,36 @@ class MuridController extends Controller
     /**
      * Update the specified resource in storage.
      */
+
+
     public function update(Request $request, Murid $murid)
     {
-        //
+        $request->validate([
+            'nama' => 'required|string|max:255',
+            'alamat' => 'nullable|string',
+            'photo' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+            'kelas_id' => 'required',
+        ]);
+
+        $data = [
+            'nama' => $request->nama,
+            'alamat' => $request->alamat,
+            'kelas_id' => $request->kelas_id,
+        ];
+
+        if ($request->hasFile('photo')) {
+            // Hapus foto lama dari storage jika ada
+            if ($murid->photo) {
+                Storage::delete('public/' . $murid->photo);
+            }
+
+            $path = $request->file('photo')->store('murid-photos', 'public');
+            $data['photo'] = $path;
+        }
+
+        $murid->update($data);
+
+        return back()->with('success', 'Data murid berhasil diperbarui!');
     }
 
     /**
@@ -182,5 +214,29 @@ class MuridController extends Controller
             Log::error('Error saat import: ' . $e->getMessage());
             return back()->with('error', 'Terjadi kesalahan saat import: ' . $e->getMessage());
         }
+    }
+
+    public function download_kartu_satuan($id)
+    {
+        $murid = Murid::with('kelas')->findOrFail($id);
+
+        // AMBIL DATA SEKOLAH 
+        $sekolah = Sekolah::find($murid->sekolah_id);
+
+
+
+        $qr = base64_encode(
+            QrCode::format('png')
+                ->size(300) // besar dulu, nanti dikecilkan via CSS
+                ->generate($murid->nis)
+        );
+
+        $pdf = PDF::loadView('pages/murid/kartu-s', [
+            'data' => $murid,
+            'sekolah' => $murid->sekolah,
+            'qr' => $qr
+        ]);
+
+        return $pdf->download('Kartu-Absen-' . $murid->nis . '.pdf');
     }
 }

@@ -11,16 +11,14 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('absensis', function (Blueprint $table) {
+        Schema::create('transaksis', function (Blueprint $table) {
             $table->id();
             $table->foreignId('sekolah_id')->constrained('sekolahs')->onDelete('cascade');
-            $table->foreignId('murid_id'); 
-            $table->foreignId('kelas_id');            
-            $table->string('hari');
-            $table->integer('tanggal');
-            $table->string('bulan');
-            $table->string('jam_absen');
-            $table->integer('status');            
+            $table->string('order_id')->unique(); // ID unik untuk Midtrans
+            $table->string('status')->default('pending'); // pending, success, settled, failure
+            $table->bigInteger('gross_amount');
+            $table->string('snap_token')->nullable(); // Token untuk memunculkan pop-up Midtrans
+            $table->string('payment_type')->nullable(); // gopay, bank_transfer, dll
             $table->timestamps();
         });
     }
@@ -30,6 +28,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('absensis');
+        Schema::dropIfExists('transaksis');
     }
 };
